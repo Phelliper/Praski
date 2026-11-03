@@ -84,7 +84,7 @@ export default function Home() {
           {destaques.map((p) => (
             <Link
               key={p.id}
-              href="/produtos"
+              href={`/produtos/${p.id}`}
               className="rounded-lg bg-white p-4 shadow hover:bg-green-50"
             >
               <div className="mb-3 overflow-hidden rounded bg-green-100">
