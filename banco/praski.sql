@@ -1,4 +1,3 @@
-SET NAMES utf8mb4;
 CREATE DATABASE IF NOT EXISTS praski
   CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 USE praski;
@@ -68,3 +67,8 @@ INSERT INTO produtos (nome, descricao, preco, embalagem, estoque, imagem, catego
   ('Fosfato Monoamônico', 'Rico em fósforo e nitrogênio, perfeito para solos tropicais.', 15.00, '1kg', 28, 'fosfato-monoamonico.png', 3),
   ('Ácido Bórico', 'Micronutriente que ajuda raízes, flores e frutos e corrige falta de boro.', 15.00, '1kg', 5, 'acido-borico.png', 3),
   ('Zeólita', 'Mineral poroso que libera nutrientes devagar e ajuda o solo a reter água.', 20.00, '1kg', 22, 'zeolita.png', 3);
+
+-- Usuário administrador inicial (senha: praski@2026, criptografada com bcrypt)
+-- Troque a senha pela página "Meu perfil" depois do primeiro login.
+INSERT INTO usuarios (nome, email, senha_hash, tipo) VALUES
+  ('Phellipe Rodrigues da Conceição', 'phellipe.rodrigues.con@gmail.com', '$2b$10$lkr0YzTHOCoB.gqqWKc7uOzK/ir7lYOK9eNs0RAbIvyp1en0YX95G', 'admin');
