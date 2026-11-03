@@ -1,69 +1,109 @@
-import Image from "next/image";
+"use client";
+
+import { useEffect, useState } from "react"; // Teacher a página cliente ("use client"). useState guarda categorias, produtos em destaque e erro. useEffect ele busca /api/categorias e /api/produtos ao abrir e escolhe os 4 com mais estoque
+import Link from "next/link"; // Teacher esse import seria para links internos sem recarregar o site (categorias, “ver produtos”, cards dos destaques).
+import Image from "next/image"; // E para fechar, esse import seria para imagens otimizadas dos produtos em destaque
+
+type Categoria = { id: number; nome: string };
+
+type Produto = {
+  id: number;
+  nome: string;
+  preco: string;
+  imagem: string;
+  estoque: number;
+};
 
 export default function Home() {
+  const [categorias, setCategorias] = useState<Categoria[]>([]);
+  const [destaques, setDestaques] = useState<Produto[]>([]);
+  const [erro, setErro] = useState("");
+
+    useEffect(() => {
+    fetch("/api/categorias")
+      .then((r) => {
+        if (!r.ok) throw new Error("falha");
+        return r.json();
+      })
+      .then((dados) => setCategorias(Array.isArray(dados) ? dados : []))
+      .catch(() => setErro("Não foi possível carregar a loja."));
+
+    fetch("/api/produtos")
+      .then((r) => {
+        if (!r.ok) throw new Error("falha");
+        return r.json();
+      })
+      .then((lista: Produto[]) => {
+        // Destaques: os 4 produtos com mais estoque
+        const maisEstoque = [...lista]
+          .filter((p) => p.estoque > 0)
+          .sort((a, b) => b.estoque - a.estoque)
+          .slice(0, 4);
+        setDestaques(maisEstoque);
+      })
+      .catch(() => setErro("Não foi possível carregar a loja."));
+  }, []);
+
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert h-5 w-[100px]"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the{" "}
-            <code className="rounded bg-black/[.06] px-1.5 py-0.5 font-mono text-[0.9em] dark:bg-white/[.08]">
-              page.tsx
-            </code>{" "}
-            file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
+    <div className="space-y-10">
+      <section className="rounded-lg bg-green-200 p-10 text-center">
+        <h1 className="text-4xl font-bold text-green-900">Bem-vindo ao Praski</h1>
+        <p className="mt-2 text-green-800">
+          Sementes e fertilizantes para o seu jardim e a sua horta.
+        </p>
+        <Link
+          href="/produtos"
+          className="mt-4 inline-block rounded bg-green-700 px-6 py-2 text-white hover:bg-green-800"
+        >
+          Ver produtos
+        </Link>
+      </section>
+
+      {erro && (
+        <p className="rounded-lg bg-red-100 p-4 text-center text-red-800">{erro}</p>
+      )}
+
+      <section>
+        <h2 className="mb-4 text-2xl font-semibold text-green-900">Categorias</h2>
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+          {categorias.map((c) => (
+            <Link
+              key={c.id}
+              href="/produtos"
+              className="rounded-lg bg-white p-6 text-center text-gray-800 shadow hover:bg-green-100"
             >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
+              {c.nome}
+            </Link>
+          ))}
+        </div>
+      </section>
+
+      <section>
+        <h2 className="mb-4 text-2xl font-semibold text-green-900">Destaques</h2>
+        <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
+          {destaques.map((p) => (
+            <Link
+              key={p.id}
+              href="/produtos"
+              className="rounded-lg bg-white p-4 shadow hover:bg-green-50"
             >
-              Learning
-            </a>{" "}
-            center.
-          </p>
+              <div className="mb-3 overflow-hidden rounded bg-green-100">
+                <Image
+                  src={`/img/${p.imagem}`}
+                  alt={p.nome}
+                  width={300}
+                  height={200}
+                  className="h-32 w-full object-cover"
+                />
+              </div>
+              <p className="font-medium text-gray-900">{p.nome}</p>
+              <p className="text-green-700">
+                R$ {Number(p.preco).toFixed(2).replace(".", ",")}
+              </p>
+            </Link>
+          ))}
         </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert h-[14px] w-4"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={14}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
-      </main>
+      </section>
     </div>
   );
 }
